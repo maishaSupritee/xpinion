@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
+import userRoutes from "./routes/userRoutes.js";
+import { errorHandling } from "./middlewares/errorHandling.js";
 
 dotenv.config();
 
@@ -13,8 +15,10 @@ app.use(express.json()); // Parse JSON bodies
 app.use(cors()); // Enable CORS for all routes
 
 // routes
+app.use("/api", userRoutes); // Use user routes under /api path
 
 // error handling
+app.use(errorHandling); // Centralized error handling middleware
 
 // test postgres connection
 app.get("/", async (req, res) => {
