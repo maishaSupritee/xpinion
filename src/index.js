@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
-import { errorHandling } from "./middlewares/errorHandling.js";
+import errorHandling from "./middlewares/errorHandler.js"; // Import centralized error handling middleware
 
 dotenv.config();
 
