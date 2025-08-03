@@ -4,14 +4,6 @@ import dotenv from "dotenv";
 dotenv.config(); // Load environment variables from .env file
 const { Pool } = pkg; //pg is a common js module and doesnt allow us to directly import Pool from it
 
-console.log(
-  process.env.DB_USER,
-  process.env.DB_HOST,
-  process.env.DB_NAME,
-  process.env.DB_PORT,
-  process.env.DB_PASSWORD
-); //log the environment variables to check if they are being read correctly
-
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
