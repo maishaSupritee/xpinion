@@ -16,9 +16,9 @@ const handleResponse = (res, status, message, data = null) => {
 };
 
 export const createUser = async (req, res, next) => {
-  const { name, email } = req.body;
+  const { name, email, password } = req.body;
   try {
-    const newUser = await createUserService(name, email);
+    const newUser = await createUserService(name, email, password);
     handleResponse(res, 201, "User created successfully", newUser);
   } catch (error) {
     next(error); // Pass the error to the centralized error handling middleware i.e. errorHandling function from errorHandler.js
@@ -47,9 +47,14 @@ export const getUserById = async (req, res, next) => {
 };
 
 export const updateUser = async (req, res, next) => {
-  const { name, email } = req.body;
+  const { name, email, password } = req.body;
   try {
-    const updatedUser = await updateUserService(req.params.id, name, email);
+    const updatedUser = await updateUserService(
+      req.params.id,
+      name,
+      email,
+      password
+    );
     if (!updatedUser) {
       return handleResponse(res, 404, "User not found");
     }
