@@ -1,0 +1,11 @@
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config(); // Load environment variables from .env file
+
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRATION || "1h", // Default expiration time is 1 hour
+  });
+}; // Function to generate a JWT token for a user
+
+export default generateToken;

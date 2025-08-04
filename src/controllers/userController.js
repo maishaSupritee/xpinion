@@ -3,11 +3,12 @@ import {
   createUserService,
   getAllUsersService,
   getUserByIdService,
+  getUserByEmailService,
   updateUserService,
   deleteUserService,
 } from "../models/userModel.js";
 
-const handleResponse = (res, status, message, data = null) => {
+export const handleResponse = (res, status, message, data = null) => {
   res.status(status).json({
     status,
     message,
@@ -37,6 +38,19 @@ export const getAllUsers = async (req, res, next) => {
 export const getUserById = async (req, res, next) => {
   try {
     const user = await getUserByIdService(req.params.id);
+    if (!user) {
+      return handleResponse(res, 404, "User not found");
+    }
+    handleResponse(res, 200, "User fetched successfully", user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserByEmail = async (req, res, next) => {
+  const { email } = req.params;
+  try {
+    const user = await getUserByEmailService(email);
     if (!user) {
       return handleResponse(res, 404, "User not found");
     }

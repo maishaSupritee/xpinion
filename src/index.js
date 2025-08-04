@@ -5,6 +5,7 @@ import pool from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import errorHandling from "./middlewares/errorHandler.js"; // Import centralized error handling middleware
 import createUserTable from "./data/createUserTable.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(cors()); // Enable CORS for all routes
 
 // routes
 app.use("/api", userRoutes); // Use user routes under /api path
+app.use("/api/auth", authRoutes); // Use authentication routes under /auth path
 
 // error handling
 app.use(errorHandling); // Centralized error handling middleware
