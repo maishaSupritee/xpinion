@@ -15,7 +15,7 @@ const createUserTable = async () => {
       "User table created successfully, if it does not already exist."
     );
   } catch (error) {
-    console.error("Error creating user table:", error);
+    console.error("Error creating user table: ", error);
   }
 };
 

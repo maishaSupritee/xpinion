@@ -6,6 +6,8 @@ import userRoutes from "./routes/userRoutes.js";
 import errorHandling from "./middlewares/errorHandler.js"; // Import centralized error handling middleware
 import createUserTable from "./data/createUserTable.js";
 import authRoutes from "./routes/authRoutes.js";
+import createReviewsTable from "./data/createReviewsTable.js";
+import createGamesTable from "./data/createGamesTable.js";
 
 dotenv.config();
 
@@ -25,6 +27,8 @@ app.use(errorHandling); // Centralized error handling middleware
 
 // create table before we start the server
 createUserTable();
+createGamesTable();
+createReviewsTable();
 
 // test postgres connection
 app.get("/", async (req, res) => {
