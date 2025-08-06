@@ -2,7 +2,7 @@ import Joi from "joi";
 
 // define how our user inputs should look like
 const userSchema = Joi.object({
-  name: Joi.string().min(3).required(), // name should be a string with a minimum length of 3 characters and we cant have it blank (required)
+  username: Joi.string().min(3).required(), // username should be a string with a minimum length of 3 characters and we cant have it blank (required)
   email: Joi.string().email().required(), // email should be a valid email format and we cant have it blank (required)
   password: Joi.string().min(8).required(), // password should be a string with a minimum length of 6 characters and we cant have it blank (required)
 });

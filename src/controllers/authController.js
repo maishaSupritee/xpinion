@@ -9,14 +9,14 @@ import { handleResponse } from "./userController.js";
 //SIGN UP
 export const signUp = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     const existingUser = await getUserByEmailService(email);
     if (existingUser) {
       return handleResponse(res, 400, "User already exists with this email");
     }
 
-    const newUser = await createUserService(name, email, password);
+    const newUser = await createUserService(username, email, password);
     const token = generateToken(newUser.id);
 
     return handleResponse(res, 201, "User created successfully", {
