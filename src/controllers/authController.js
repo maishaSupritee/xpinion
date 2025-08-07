@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import {
+  getUserByEmailForAuthService,
   getUserByEmailService,
   createUserService,
 } from "../models/userModel.js";
@@ -33,7 +34,8 @@ export const logIn = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await getUserByEmailService(email);
+    // Use AUTH version that includes password
+    const user = await getUserByEmailForAuthService(email);
     if (!user) {
       return handleResponse(res, 404, "Invalid credentials");
     }
@@ -44,7 +46,14 @@ export const logIn = async (req, res, next) => {
     }
 
     const token = generateToken(user.id);
-    return handleResponse(res, 200, "Login successful", { user, token });
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+
+    return handleResponse(res, 200, "Login successful", {
+      user: userWithoutPassword,
+      token,
+    });
   } catch (error) {
     next(error);
   }

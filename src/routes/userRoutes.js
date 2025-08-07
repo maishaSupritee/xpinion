@@ -6,7 +6,7 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/userController.js";
-import validateUserInput from "../middlewares/inputValidator.js";
+import { validateUserInput } from "../middlewares/inputValidator.js";
 
 const router = express.Router();
 

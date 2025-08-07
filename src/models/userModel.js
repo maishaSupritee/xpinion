@@ -19,10 +19,21 @@ export const getUserByIdService = async (id) => {
   return result.rows[0]; // Return the first user with the specified id
 };
 
+// SAFE VERSION - for general use (NO PASSWORD)
 export const getUserByEmailService = async (email) => {
-  const result = await pool.query("SELECT * FROM users WHERE email = $1", [
-    email,
-  ]);
+  const result = await pool.query(
+    "SELECT id, username, email, created_at FROM users WHERE email = $1",
+    [email]
+  );
+  return result.rows[0];
+};
+
+// AUTH VERSION - ONLY for authentication (includes password)
+export const getUserByEmailForAuthService = async (email) => {
+  const result = await pool.query(
+    "SELECT id, username, email, password, created_at FROM users WHERE email = $1",
+    [email]
+  );
   return result.rows[0];
 };
 
@@ -54,7 +65,7 @@ export const updateUserService = async (id, username, email, password) => {
 
 export const deleteUserService = async (id) => {
   const result = await pool.query(
-    "DELETE FROM users WHERE id = $1 RETURNING id,name,email,created_at",
+    "DELETE FROM users WHERE id = $1 RETURNING id, username, email, created_at",
     [id]
   );
   return result.rows[0]; // Return the deleted user
