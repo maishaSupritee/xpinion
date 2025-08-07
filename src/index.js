@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
+import gameRoutes from "./routes/gameRoutes.js";
 import errorHandling from "./middlewares/errorHandler.js"; // Import centralized error handling middleware
 import createUserTable from "./data/createUserTable.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -21,6 +22,7 @@ app.use(cors()); // Enable CORS for all routes
 // routes
 app.use("/api", userRoutes); // Use user routes under /api path
 app.use("/api/auth", authRoutes); // Use authentication routes under /auth path
+app.use("/api/games", gameRoutes);
 
 // error handling
 app.use(errorHandling); // Centralized error handling middleware
@@ -38,5 +40,5 @@ app.get("/", async (req, res) => {
 
 // running the server
 app.listen(PORT, () => {
-  console.log(`Server is running on http:localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

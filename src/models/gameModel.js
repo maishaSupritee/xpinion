@@ -16,13 +16,14 @@ export const getGameByIdService = async (id) => {
 
 export const getGamesByGenreService = async (genre) => {
   const result = await pool.query(
-    "SELECT * FROM games WHERE genre = $1 ORDER BY created_at DESC",
-    [genre]
+    "SELECT * FROM games WHERE genre ILIKE $1 ORDER BY created_at DESC",
+    [`%${genre}%`]
   );
   return result.rows; // Return all games with the specified genre
 };
 
 export const searchGamesService = async (searchTerm) => {
+  // Use ILIKE for case-insensitive search in PostgreSQL
   const result = await pool.query(
     "SELECT * FROM games WHERE title ILIKE $1 OR description ILIKE $1 ORDER BY created_at DESC",
     [`%${searchTerm}%`]

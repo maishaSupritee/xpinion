@@ -20,7 +20,7 @@ const gameSchema = Joi.object({
   genre: Joi.string().max(100).optional(), // genre should be a string with a max length of 100 characters and we cant have it blank (required)
   description: Joi.string().max(1000).optional().allow(""), // description is optional and can be an empty string
   developer: Joi.string().max(255).optional().allow(""), // developer is optional and can be an empty string
-  releaseDate: Joi.date().optional(), // releaseDate is optional and should be a valid date
+  release_date: Joi.date().optional(), // releaseDate is optional and should be a valid date
   publisher: Joi.string().max(255).optional().allow(""), // publisher is optional
   platform: Joi.string().max(100).optional().allow(""), // platform is optional and can be an empty string,
   image_url: Joi.string().uri().optional().allow(""), // image_url is optional and should be a valid URI

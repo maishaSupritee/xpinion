@@ -5,7 +5,7 @@ import {
   createUserService,
 } from "../models/userModel.js";
 import generateToken from "../utils/generateToken.js";
-import { handleResponse } from "./userController.js";
+import { handleResponse } from "../utils/responseHandler.js";
 
 //SIGN UP
 export const signUp = async (req, res, next) => {

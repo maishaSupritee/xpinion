@@ -8,13 +8,7 @@ import {
   deleteUserService,
 } from "../models/userModel.js";
 
-export const handleResponse = (res, status, message, data = null) => {
-  res.status(status).json({
-    status,
-    message,
-    data,
-  });
-};
+import { handleResponse } from "../utils/responseHandler.js";
 
 export const createUser = async (req, res, next) => {
   const { username, email, password } = req.body;
