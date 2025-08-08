@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import pool from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 import errorHandling from "./middlewares/errorHandler.js"; // Import centralized error handling middleware
 import createUserTable from "./data/createUserTable.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -23,6 +24,7 @@ app.use(cors()); // Enable CORS for all routes
 app.use("/api", userRoutes); // Use user routes under /api path
 app.use("/api/auth", authRoutes); // Use authentication routes under /auth path
 app.use("/api/games", gameRoutes);
+app.use("/api/reviews", reviewRoutes); // Use review routes under /reviews path
 
 // error handling
 app.use(errorHandling); // Centralized error handling middleware
