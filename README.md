@@ -80,7 +80,7 @@ It’s built with Node.js, Express, and PostgreSQL (in Docker) to provide secure
 
 | Method | Endpoint                  | Description     |
 | ------ | ------------------------- | --------------- |
-| POST   | `/api/auth/register`      | Register user   |
+| POST   | `/api/auth/signup`        | Register user   |
 | POST   | `/api/auth/login`         | Login & get JWT |
 | GET    | `/api/games/search/:term` | Search games    |
 | GET    | `/api/games/genre/:genre` | Filter by genre |
