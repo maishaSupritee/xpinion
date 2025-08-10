@@ -91,6 +91,23 @@ export const getAverageRatingByGameId = async (req, res, next) => {
   }
 };
 
+export const searchReviews = async (req, res, next) => {
+  const { searchTerm } = req.query;
+  try {
+    const reviews = await searchReviewsService(searchTerm);
+    if (!reviews || reviews.length === 0) {
+      return handleResponse(
+        res,
+        404,
+        "No reviews found matching the search term"
+      );
+    }
+    handleResponse(res, 200, "Reviews fetched successfully", reviews);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateReview = async (req, res, next) => {
   const { title, content, rating, user_id, game_id } = req.body;
   try {

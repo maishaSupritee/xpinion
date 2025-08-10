@@ -74,6 +74,8 @@ const reviews = [
   },
 ];
 
+//client is a Postgres client from the pool
+// It is used to execute queries directly against the database
 async function upsertUsers(client) {
   const map = new Map(); // email -> id; key = email, value = user id
   // Use ON CONFLICT to update username if email already exists

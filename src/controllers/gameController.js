@@ -72,9 +72,9 @@ export const getGamesByGenre = async (req, res, next) => {
 };
 
 export const searchGames = async (req, res, next) => {
-  const { term } = req.params;
+  const { searchTerm } = req.params;
   try {
-    const games = await searchGamesService(term);
+    const games = await searchGamesService(searchTerm);
     if (!games || games.length === 0) {
       return handleResponse(res, 404, "Games not found");
     }

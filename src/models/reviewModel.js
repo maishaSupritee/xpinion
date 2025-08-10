@@ -53,6 +53,19 @@ export const getAverageRatingByGameIdService = async (game_id) => {
   return result.rows[0]; // Return the average rating and review count for the specified game
 };
 
+export const searchReviewsService = async (searchTerm) => {
+  const result = await pool.query(
+    `SELECT r.id, r.title, r.content, r.rating, r.created_at, u.username, u.email as user_email, g.title as game_title, g.genre as game_genre, g.platform as game_platform
+     FROM reviews r
+      JOIN users u ON r.user_id = u.id
+      JOIN games g ON r.game_id = g.id
+      WHERE r.title ILIKE $1 OR r.content ILIKE $1
+      ORDER BY r.created_at DESC`,
+    [`%${searchTerm}%`]
+  );
+  return result.rows; // Return all reviews that match the search term in title or content
+};
+
 export const createReviewService = async (
   title,
   content,
