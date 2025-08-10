@@ -3,29 +3,33 @@
 Where your XP meets your opinion. 💬🎮
 
 Xpinion is a REST API for managing users, games, and reviews.
-It’s built with Node.js, Express, and PostgreSQL (in Docker) to provide secure, scalable, and easy-to-use endpoints for game review platforms.
+It’s built with Node.js, Express, and PostgreSQL (in Docker) to provide secure, scalable, and easy-to-use endpoints for a game review platform.
 
 ## ✨ Features
 
 - User Authentication & Authorization
-- - JWT-based auth for secure login & registration
-- - Public vs. protected routes
+
+  - JWT-based auth for secure login & registration
+  - Public vs. protected routes
 
 - Game Management
-- - Create, update, delete, and search games by title, description, or genre
-- - Fetch average rating per game
+
+  - Create, update, delete, and search games by title, description, or genre
+  - Fetch average rating per game
 
 - Review Management
-- - Submit, update, and delete reviews
-- - Filter reviews by game or user
+
+  - Submit, update, and delete reviews
+  - Filter reviews by game or user
 
 - Data Validation & Error Handling
-- - Middleware validation for required fields, type checks, and value ranges
-- - Centralized error handler for consistent JSON responses
+
+  - Middleware validation for required fields, type checks, and value ranges
+  - Centralized error handler for consistent JSON responses
 
 - Security
-- - Parameterized queries to prevent SQL injection
-- - Secure password hashing with bcrypt
+  - Parameterized queries to prevent SQL injection
+  - Secure password hashing with bcrypt
 
 ## 🚀 Getting Started
 
