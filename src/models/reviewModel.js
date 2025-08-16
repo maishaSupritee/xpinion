@@ -12,7 +12,7 @@ export const getAllReviewsService = async () => {
 
 export const getReviewByIdService = async (id) => {
   const result = await pool.query(
-    "SELECT  r.id, r.title, r.content, r.rating, r.created_at,  u.email as user_email, g.title as game_title, g.genre as game_genre, g.platform as game_platform FROM reviews r JOIN users u ON r.user_id = u.id JOIN games g ON r.game_id = g.id WHERE r.id = $1",
+    "SELECT  r.id, r.title, r.content, r.rating, r.created_at, r.user_id, u.email as user_email, g.title as game_title, g.genre as game_genre, g.platform as game_platform FROM reviews r JOIN users u ON r.user_id = u.id JOIN games g ON r.game_id = g.id WHERE r.id = $1",
     [id]
   );
   return result.rows[0];

@@ -120,7 +120,7 @@ export const deleteGame = async (req, res, next) => {
     if (!deletedGame) {
       return handleResponse(res, 404, "Game not found");
     }
-    handleResponse(res, 200, "Game deleted successfully", deletedGame);
+    handleResponse(res, 204, "Game deleted successfully", deletedGame);
   } catch (error) {
     next(error);
   }

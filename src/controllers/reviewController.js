@@ -11,7 +11,13 @@ import {
 import { handleResponse } from "../utils/responseHandler.js";
 
 export const createReview = async (req, res, next) => {
-  const { title, content, rating, user_id, game_id } = req.body;
+  const { title, content, rating, game_id } = req.body;
+  const user_id = req.user.id;
+
+  if (!user_id) {
+    return handleResponse(res, 400, "User ID is required to create a review");
+  }
+
   try {
     const newReview = await createReviewService(
       title,
@@ -22,6 +28,7 @@ export const createReview = async (req, res, next) => {
     );
     return handleResponse(res, 201, "Review created successfully", newReview);
   } catch (error) {
+    console.log("Error in createReview:", error);
     next(error);
   }
 };
@@ -109,32 +116,55 @@ export const searchReviews = async (req, res, next) => {
 };
 
 export const updateReview = async (req, res, next) => {
-  const { title, content, rating, user_id, game_id } = req.body;
+  const { title, content, rating, game_id } = req.body;
+  const reviewId = req.params.id;
+  const userId = req.user.id;
+
   try {
+    // check if the review exists and belongs to the user
+    const existingReview = await getReviewByIdService(reviewId);
+    if (!existingReview) {
+      return handleResponse(res, 404, "Review not found");
+    }
+    // Check if the user owns this review (with type conversion to handle string/number mismatch)
+    if (parseInt(existingReview.user_id) !== parseInt(userId)) {
+      return handleResponse(res, 403, "You can only update your own reviews");
+    }
+
     const updatedReview = await updateReviewService(
-      req.params.id,
+      reviewId,
       title,
       content,
       rating,
-      user_id,
+      userId,
       game_id
     );
-    if (!updatedReview) {
-      return handleResponse(res, 404, "Review not found");
-    }
+
     handleResponse(res, 200, "Review updated successfully", updatedReview);
   } catch (error) {
+    console.log("Error in updateReview:", error);
     next(error);
   }
 };
 
 export const deleteReview = async (req, res, next) => {
+  const reviewId = req.params.id;
+  const userId = req.user.id;
+
   try {
-    const deletedReview = await deleteReviewService(req.params.id);
-    if (!deletedReview) {
+    // check if the review exists and belongs to the user
+    const existingReview = await getReviewByIdService(reviewId);
+    if (!existingReview) {
       return handleResponse(res, 404, "Review not found");
     }
-    handleResponse(res, 200, "Review deleted successfully", deletedReview);
+
+    // Check if the user owns this review (with type conversion to handle string/number mismatch)
+    if (parseInt(existingReview.user_id) !== parseInt(userId)) {
+      return handleResponse(res, 403, "You can only delete your own reviews");
+    }
+
+    const deletedReview = await deleteReviewService(reviewId);
+    handleResponse(res, 204, "Review deleted successfully", deletedReview);
   } catch (error) {
     next(error);
   }

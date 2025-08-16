@@ -30,7 +30,7 @@ const reviewSchema = Joi.object({
   title: Joi.string().min(3).max(255).required(), // title should be a string with a minimum length of 3 characters, max 255, and we cant have it blank (required)
   content: Joi.string().optional(), // content is optional and can be an empty string
   rating: Joi.number().min(1).max(5).required(), // rating should be a number between 1 and 5 and we cant have it blank (required)
-  user_id: Joi.number().integer().required(), // user_id should be an integer and we cant have it blank (required)
+  user_id: Joi.number().integer(), // user_id should be an integer and we cant have it blank (required)
   game_id: Joi.number().integer().required(), // game_id should be an integer and we cant have it blank (required)
 });
 
