@@ -15,7 +15,7 @@ router.post("/users", validateUserInput, createUser);
 router.get("/users", getAllUsers);
 router.get("/users/:id", getUserById);
 
-// Protected routes
+// Protected writes
 router.put("/users/:id", protect, validateUserInput, updateUser);
 router.delete("/users/:id", protect, deleteUser);
 
