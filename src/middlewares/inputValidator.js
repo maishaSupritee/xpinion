@@ -5,6 +5,7 @@ const userSchema = Joi.object({
   username: Joi.string().min(3).required(), // username should be a string with a minimum length of 3 characters and we cant have it blank (required)
   email: Joi.string().email().required(), // email should be a valid email format and we cant have it blank (required)
   // Add to your Joi schema
+  role: Joi.string().valid("user", "admin").optional(), // only valid roles are 'user' or 'admin', defaults to 'user' if not provided
   password: Joi.string()
     .min(8)
     .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])"))

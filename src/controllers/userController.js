@@ -11,12 +11,19 @@ import {
 import { handleResponse } from "../utils/responseHandler.js";
 
 export const createUser = async (req, res, next) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, role } = req.body;
   try {
-    const newUser = await createUserService(username, email, password);
+    // only allow role setting if user is admin
+    const finalRole = req.user && req.user.role === "admin" ? role : "user";
+    const newUser = await createUserService(
+      username,
+      email,
+      password,
+      finalRole
+    );
     handleResponse(res, 201, "User created successfully", newUser);
   } catch (error) {
-    next(error); // Pass the error to the centralized error handling middleware i.e. errorHandling function from errorHandler.js
+    next(error);
   }
 };
 
@@ -55,20 +62,33 @@ export const getUserByEmail = async (req, res, next) => {
 };
 
 export const updateUser = async (req, res, next) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, role } = req.body;
   const targetUserId = req.params.id;
   const authenticatedUserId = req.user.id;
+  const userRole = req.user.role;
+
   try {
     const targetUser = await getUserByIdService(targetUserId);
     if (!targetUser) {
       return handleResponse(res, 404, "User not found");
     }
-    console.log("Comparing user IDs:", targetUser.id, authenticatedUserId);
-    if (parseInt(targetUser.id) !== parseInt(authenticatedUserId)) {
+
+    // only allow admins to change roles
+    let updatedRole = targetUser.role; //default to current role
+    if (role && userRole === "admin") {
+      updatedRole = role; // allow admin to change role
+    } else if (role && userRole !== "admin") {
+      return handleResponse(res, 403, "Only admins can change user roles");
+    }
+
+    const isOwner = parseInt(targetUserId) === parseInt(authenticatedUserId);
+    const isAdmin = userRole === "admin";
+
+    if (!isOwner && !isAdmin) {
       return handleResponse(
         res,
         403,
-        "You are not authorized to update this user"
+        "You can only update your own account or you need admin privileges"
       );
     }
 
@@ -76,10 +96,13 @@ export const updateUser = async (req, res, next) => {
       targetUserId,
       username,
       email,
-      password
+      password,
+      updatedRole
     );
+
     handleResponse(res, 200, "User updated successfully", updatedUser);
   } catch (error) {
+    console.error("Error in updateUser:", error);
     next(error);
   }
 };
@@ -87,26 +110,35 @@ export const updateUser = async (req, res, next) => {
 export const deleteUser = async (req, res, next) => {
   const targetUserId = req.params.id;
   const authenticatedUserId = req.user.id;
-  console.log("Request to delete user with ID:", targetUserId);
+  const userRole = req.user.role;
+
   try {
     const targetUser = await getUserByIdService(targetUserId);
     if (!targetUser) {
       return handleResponse(res, 404, "User not found");
     }
 
-    if (parseInt(targetUser.id) !== parseInt(authenticatedUserId)) {
+    // Authorization check
+    const isOwner = parseInt(targetUserId) === parseInt(authenticatedUserId);
+    const isAdmin = userRole === "admin";
+
+    // Prevent admins from deleting themselves (optional safety check)
+    if (isAdmin && isOwner) {
+      return handleResponse(res, 403, "Admins cannot delete their own account");
+    }
+
+    if (!isOwner && !isAdmin) {
       return handleResponse(
         res,
         403,
-        "You are not authorized to delete this user"
+        "You can only delete your own account or you need admin privileges"
       );
     }
-
-    console.log("Deleting user with ID:", targetUserId);
 
     const deletedUser = await deleteUserService(targetUserId);
     handleResponse(res, 204, "User deleted successfully", deletedUser);
   } catch (error) {
+    console.error("Error in deleteUser:", error);
     next(error);
   }
 };

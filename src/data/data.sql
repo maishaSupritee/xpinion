@@ -3,8 +3,9 @@ CREATE TABLE IF NOT EXISTS users(
     username VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-)
+    role VARCHAR(50) DEFAULT 'user' CHECK (role IN ('user', 'admin')), -- Role can be 'user' or 'admin'
+    created_at TIMESTAMP DEFAULT NOW()
+);
 
 CREATE TABLE IF NOT EXISTS reviews(
     id SERIAL PRIMARY KEY,

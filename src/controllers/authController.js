@@ -10,14 +10,14 @@ import { handleResponse } from "../utils/responseHandler.js";
 //SIGN UP
 export const signUp = async (req, res, next) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, role } = req.body;
 
     const existingUser = await getUserByEmailService(email);
     if (existingUser) {
       return handleResponse(res, 400, "User already exists with this email");
     }
 
-    const newUser = await createUserService(username, email, password);
+    const newUser = await createUserService(username, email, password, role);
     const token = generateToken(newUser.id);
 
     return handleResponse(res, 201, "User created successfully", {
@@ -45,7 +45,7 @@ export const logIn = async (req, res, next) => {
       return handleResponse(res, 401, "Invalid credentials");
     }
 
-    const token = generateToken(user.id);
+    const token = generateToken(user);
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
