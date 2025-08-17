@@ -169,3 +169,24 @@ export const deleteReview = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteReviewAsAdmin = async (req, res, next) => {
+  const reviewId = req.params.id;
+
+  try {
+    const existingReview = await getReviewByIdService(reviewId);
+    if (!existingReview) {
+      return handleResponse(res, 404, "Review not found");
+    }
+
+    const deletedReview = await deleteReviewService(reviewId);
+    handleResponse(
+      res,
+      204,
+      "Review deleted successfully by admin",
+      deletedReview
+    );
+  } catch (error) {
+    next(error);
+  }
+};

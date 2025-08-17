@@ -20,6 +20,12 @@ export const createGame = async (req, res, next) => {
     platform,
     image_url,
   } = req.body;
+  const userId = req.user.id;
+  const userRole = req.user.role;
+  if (!userId || userRole !== "admin") {
+    return handleResponse(res, 403, "Only admins can create games");
+  }
+
   try {
     const newGame = await createGameService(
       title,
@@ -88,26 +94,38 @@ export const updateGame = async (req, res, next) => {
   const {
     title,
     genre,
-    platform,
-    release_year,
-    developer,
-    publisher,
     description,
+    developer,
+    release_date,
+    publisher,
+    platform,
+    image_url,
   } = req.body;
+  const gameId = req.params.id;
+  const userId = req.user.id;
+  const userRole = req.user.role;
+
   try {
-    const updatedGame = await updateGameService(
-      req.params.id,
-      title,
-      genre,
-      platform,
-      release_year,
-      developer,
-      publisher,
-      description
-    );
-    if (!updatedGame) {
+    const existingGame = await getGameByIdService(gameId);
+    if (!existingGame) {
       return handleResponse(res, 404, "Game not found");
     }
+
+    if (!userId || userRole !== "admin") {
+      return handleResponse(res, 403, "Only admins can update games");
+    }
+
+    const updatedGame = await updateGameService(
+      gameId,
+      title,
+      genre,
+      description,
+      developer,
+      release_date,
+      publisher,
+      platform,
+      image_url
+    );
     handleResponse(res, 200, "Game updated successfully", updatedGame);
   } catch (error) {
     next(error);
@@ -115,8 +133,21 @@ export const updateGame = async (req, res, next) => {
 };
 
 export const deleteGame = async (req, res, next) => {
+  const userId = req.user.id;
+  const userRole = req.user.role;
+  const gameId = req.params.id;
+
   try {
-    const deletedGame = await deleteGameService(req.params.id);
+    const existingGame = await getGameByIdService(gameId);
+    if (!existingGame) {
+      return handleResponse(res, 404, "Game not found");
+    }
+
+    if (!userId || userRole !== "admin") {
+      return handleResponse(res, 403, "Only admins can delete games");
+    }
+
+    const deletedGame = await deleteGameService(gameId);
     if (!deletedGame) {
       return handleResponse(res, 404, "Game not found");
     }
