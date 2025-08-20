@@ -8,7 +8,7 @@ import {
   updateReviewService,
   deleteReviewService,
 } from "../models/reviewModel.js";
-import { handleResponse } from "../utils/responseHandler.js";
+import { handleResponse } from "../utils/helpers.js";
 
 export const createReview = async (req, res, next) => {
   const { title, content, rating, game_id } = req.body;

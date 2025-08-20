@@ -4,11 +4,108 @@ import dotenv from "dotenv";
 dotenv.config(); // Load environment variables from .env file
 import bcrypt from "bcrypt";
 
-export const getAllUsersService = async () => {
-  const result = await pool.query(
-    "SELECT id, username, email, role, created_at FROM users" //don't want to expose password in the response
-  );
-  return result.rows; // Return all users from the users table
+export const getAllUsersService = async (options = {}) => {
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = "id",
+    order = "ASC",
+    search = "",
+    role = "",
+    startDate = "",
+    endDate = "",
+  } = options;
+
+  //0 index, offset is how many to skip
+  const offset = (page - 1) * limit;
+
+  //validate sortBy and order inputs to prevent SQL injection
+  const validSortByFields = ["id", "username", "email", "role", "created_at"];
+  const validOrder = ["ASC", "DESC"];
+  const sortByField = validSortByFields.includes(sortBy.toLowerCase())
+    ? sortBy.toLowerCase()
+    : "id";
+  const sortOrder = validOrder.includes(order.toUpperCase())
+    ? order.toUpperCase()
+    : "ASC";
+
+  //building the where conditions
+  let whereConditions = [];
+  let queryParams = []; //keep track of the actual values for the parameterized queries
+  let paramIndex = 1; // to keep track of the parameter index for parameterized queries - so $1 for first param, $2 for second, etc.
+
+  //search by username or email
+  if (search && search.trim()) {
+    whereConditions.push(
+      `(username ILIKE $${paramIndex} OR email ILIKE $${paramIndex})`
+    );
+    queryParams.push(`%${search.trim()}%`);
+    paramIndex++;
+  }
+
+  //filter by role
+  if (role && role.trim()) {
+    whereConditions.push(`role = $${paramIndex}`);
+    queryParams.push(role.trim());
+    paramIndex++;
+  }
+
+  //date range filter
+  if (startDate) {
+    whereConditions.push(`created_at >= $${paramIndex}`);
+    queryParams.push(startDate);
+    paramIndex++;
+  }
+
+  if (endDate) {
+    whereConditions.push(`created_at <= $${paramIndex}`);
+    queryParams.push(endDate);
+    paramIndex++;
+  }
+
+  //building the where clause
+  const whereClause =
+    whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : "";
+
+  //total count with all filters applied
+  const countQuery = `SELECT COUNT(*) FROM users ${whereClause}`;
+  const countResult = await pool.query(countQuery, queryParams); //pass the query params for parameterized query
+  const totalUsers = parseInt(countResult.rows[0].count); //total number of users matching the filters
+
+  //final query to fetch users with pagination and sorting
+  const mainQuery = `SELECT id, username, email, role, created_at FROM users ${whereClause} ORDER BY ${sortByField} ${sortOrder} LIMIT $${paramIndex} OFFSET $${
+    paramIndex + 1
+  }`;
+  queryParams.push(limit, offset); //add limit and offset to the query params
+
+  const result = await pool.query(mainQuery, queryParams);
+
+  //create some pagination metadata to return
+  const totalPages = Math.ceil(totalUsers / limit);
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
+
+  return {
+    users: result.rows,
+    pagination: {
+      currentPage: page,
+      totalUsers,
+      totalPages,
+      limit,
+      hasNextPage,
+      hasPrevPage,
+      nextPage: hasNextPage ? page + 1 : null,
+      prevPage: hasPrevPage ? page - 1 : null,
+    },
+    filters: {
+      sortBy: sortByField,
+      order: sortOrder,
+      search: search.trim() || null,
+      role: role.trim() || null,
+      startDate: startDate || null,
+      endDate: endDate || null,
+    },
+  };
 };
 
 export const getUserByIdService = async (id) => {

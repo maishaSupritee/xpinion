@@ -29,10 +29,19 @@ app.use("/api/reviews", reviewRoutes); // Use review routes under /reviews path
 // error handling
 app.use(errorHandling); // Centralized error handling middleware
 
-// create table before we start the server
-createUserTable();
-createGamesTable();
-createReviewsTable();
+// function to initialize database tables in corrrect order before starting server
+const initializeTables = async () => {
+  try {
+    console.log("Initializing database tables...");
+    await createUserTable();
+    await createGamesTable();
+    await createReviewsTable(); // depends on both users and games tables
+    console.log("Database tables initialized successfully.");
+  } catch (error) {
+    console.error("Error initializing database tables: ", error);
+    process.exit(1); // Exit the process if table creation fails
+  }
+};
 
 // test postgres connection
 app.get("/", async (req, res) => {
@@ -40,7 +49,17 @@ app.get("/", async (req, res) => {
   res.send(`The database name is: ${result.rows[0].current_database}`);
 });
 
-// running the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+// initialize the tables and start the server
+const startServer = async () => {
+  try {
+    await initializeTables(); // Ensure tables are created before starting the server
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start the server: ", error);
+    process.exit(1); // Exit the process if server startup fails
+  }
+};
+
+startServer();

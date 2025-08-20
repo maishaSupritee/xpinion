@@ -8,7 +8,7 @@ import {
   deleteUserService,
 } from "../models/userModel.js";
 
-import { handleResponse } from "../utils/responseHandler.js";
+import { handleResponse, isValidDate } from "../utils/helpers.js";
 
 export const createUser = async (req, res, next) => {
   const { username, email, password, role } = req.body;
@@ -29,7 +29,80 @@ export const createUser = async (req, res, next) => {
 
 export const getAllUsers = async (req, res, next) => {
   try {
-    const users = await getAllUsersService();
+    //extract query params for pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    //extract query params for sorting
+    const sortBy = req.query.sortBy || "id";
+    const order = req.query.order || "ASC";
+
+    //extract query params for filtering
+    const search = req.query.search || "";
+    const role = req.query.role || "";
+    const startDate = req.query.startDate || "";
+    const endDate = req.query.endDate || "";
+
+    //validate all the query params
+    if (page < 1) {
+      return handleResponse(res, 400, "Page number must be at least 1");
+    }
+
+    //only allowing max 100 users per page
+    if (limit < 1 || limit > 100) {
+      return handleResponse(res, 400, "Limit must be between 1 and 100");
+    }
+
+    const validSortFields = ["id", "username", "email", "role", "created_at"];
+    if (!validSortFields.includes(sortBy.toLowerCase())) {
+      return handleResponse(
+        res,
+        400,
+        `Invalid sortBy field. Valid fields are: ${validSortFields.join(", ")}`
+      );
+    }
+
+    const validOrder = ["ASC", "DESC"];
+    if (!validOrder.includes(order.toUpperCase())) {
+      return handleResponse(res, 400, "Order must be either 'ASC' or 'DESC'");
+    }
+
+    const validRRoles = ["user", "admin"];
+    if (
+      role &&
+      role.trim() &&
+      !validRRoles.includes(role.trim().toLowerCase())
+    ) {
+      return handleResponse(
+        res,
+        400,
+        `Invalid role filter. Valid roles are: ${validRRoles.join(", ")}`
+      );
+    }
+
+    if (startDate && !isValidDate(startDate)) {
+      return handleResponse(
+        res,
+        400,
+        "Invalid startDate format. Use YYYY-MM-DD"
+      );
+    }
+    if (endDate && !isValidDate(endDate)) {
+      return handleResponse(res, 400, "Invalid endDate format. Use YYYY-MM-DD");
+    }
+
+    const options = {
+      page,
+      limit,
+      sortBy: sortBy.toLowerCase(),
+      order: order.toUpperCase(),
+      search,
+      role: role.trim().toLowerCase(),
+      startDate,
+      endDate,
+    };
+
+    const users = await getAllUsersService(options);
     handleResponse(res, 200, "Users fetched successfully", users);
   } catch (error) {
     next(error);

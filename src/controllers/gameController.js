@@ -7,7 +7,7 @@ import {
   updateGameService,
   deleteGameService,
 } from "../models/gameModel.js";
-import { handleResponse } from "../utils/responseHandler.js";
+import { handleResponse } from "../utils/helpers.js";
 
 export const createGame = async (req, res, next) => {
   const {

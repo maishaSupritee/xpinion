@@ -23,6 +23,7 @@ const createUserTable = async () => {
     await createDefaultAdmin();
   } catch (error) {
     console.error("Error creating user table: ", error);
+    throw error; // Re-throw the error to stop initialization if table creation fails
   }
 };
 

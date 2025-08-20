@@ -22,6 +22,7 @@ const createGamesTable = async () => {
     );
   } catch (error) {
     console.error("Error creating games table: ", error);
+    throw error; // Re-throw the error to stop initialization if table creation fails
   }
 };
 
