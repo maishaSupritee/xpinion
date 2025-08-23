@@ -2,11 +2,106 @@ import pool from "../config/db.js"; // Import the database connection pool
 import dotenv from "dotenv";
 dotenv.config(); // Load environment variables from .env file
 
-export const getAllGamesService = async () => {
-  const result = await pool.query(
-    "SELECT * FROM games ORDER BY created_at DESC"
-  ); // Fetch all games ordered by creation date (newest first)
-  return result.rows; // Return all games from the games table
+export const getAllGamesService = async (options = {}) => {
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = "created_at",
+    order = "DESC",
+    search = "",
+    releaseDateStart = "",
+    releaseDateEnd = "",
+  } = options;
+
+  const offset = (page - 1) * limit;
+
+  //validate sortBy and order inputs
+  const validSortByFields = [
+    "title",
+    "release_date",
+    "created_at",
+    "platform",
+    "genre",
+    "publisher",
+    "developer",
+  ];
+  const validOrder = ["ASC", "DESC"];
+  const sortByField = validSortByFields.includes(sortBy.toLowerCase())
+    ? sortBy.toLowerCase()
+    : "created_at";
+  const sortOrder = validOrder.includes(order.toUpperCase())
+    ? order.toUpperCase()
+    : "DESC";
+
+  //creating the where conditions
+  let whereConditions = [];
+  let queryParams = [];
+  let paramIndex = 1;
+
+  //search by title, description, genre, platform
+  if (search && search.trim()) {
+    whereConditions.push(
+      `(title ILIKE $${paramIndex} OR description ILIKE $${paramIndex} OR genre ILIKE $${paramIndex} OR platform ILIKE $${paramIndex})`
+    );
+    queryParams.push(`%${search}%`);
+    paramIndex++;
+  }
+
+  //release date range filter
+  if (releaseDateStart) {
+    whereConditions.push(`(release_date >= $${paramIndex})`);
+    queryParams.push(releaseDateStart);
+    paramIndex++;
+  }
+  if (releaseDateEnd) {
+    whereConditions.push(`(release_date <= $${paramIndex})`);
+    queryParams.push(releaseDateEnd);
+    paramIndex++;
+  }
+
+  const whereClause =
+    whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : "";
+
+  const countQuery = `
+    SELECT COUNT(*) FROM games
+    ${whereClause}
+  `;
+  const countResult = await pool.query(countQuery, queryParams);
+  const totalGames = parseInt(countResult.rows[0].count, 10);
+
+  const mainQuery = `
+    SELECT * FROM games
+    ${whereClause}
+    ORDER BY ${sortByField} ${sortOrder}
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+  `;
+  queryParams.push(limit, offset);
+
+  const result = await pool.query(mainQuery, queryParams);
+
+  const totalPages = Math.ceil(totalGames / limit);
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
+
+  return {
+    games: result.rows,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      limit,
+      hasNextPage,
+      hasPrevPage,
+      nextPage: hasNextPage ? page + 1 : null,
+      prevPage: hasPrevPage ? page - 1 : null,
+    },
+    filters: {
+      sortBy: sortByField,
+      order: sortOrder,
+      search: search.trim() || "",
+      releaseDateStart: releaseDateStart || null,
+      releaseDateEnd: releaseDateEnd || null,
+    },
+  };
 };
 
 export const getGameByIdService = async (id) => {

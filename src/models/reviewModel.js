@@ -121,10 +121,8 @@ export const getAllReviewsService = async (options = {}) => {
     game_title: "g.title",
   };
 
-  // FIX 1: Use sortByField instead of validSortByFields
   const actualSortBy = sortMapping[sortByField] || "r.created_at";
-
-  // FIX 2: Count query needs the same JOINs as the main query when using search
+  //total count with all filters applied
   const countQuery = `SELECT COUNT(*) ${baseQuery}`;
   const countResult = await pool.query(countQuery, queryParams);
   const totalReviews = parseInt(countResult.rows[0].count);
