@@ -4,7 +4,6 @@ import {
   getAllGames,
   getGameById,
   getGamesByGenre,
-  searchGames,
   updateGame,
   deleteGame,
 } from "../controllers/gameController.js";
@@ -17,7 +16,6 @@ const router = express.Router();
 router.get("/", getAllGames);
 router.get("/:id", getGameById);
 router.get("/genre/:genre", getGamesByGenre);
-router.get("/search/:term", searchGames);
 
 // Protected writes
 router.post("/", protect, requireAdmin, validateGameInput, createGame);

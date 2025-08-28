@@ -3,11 +3,10 @@ import {
   getAllGamesService,
   getGameByIdService,
   getGamesByGenreService,
-  searchGamesService,
   updateGameService,
   deleteGameService,
 } from "../models/gameModel.js";
-import { handleResponse } from "../utils/helpers.js";
+import { handleResponse, isValidDate } from "../utils/helpers.js";
 
 export const createGame = async (req, res, next) => {
   const {
@@ -45,8 +44,71 @@ export const createGame = async (req, res, next) => {
 
 export const getAllGames = async (req, res, next) => {
   try {
-    const games = await getAllGamesService();
-    handleResponse(res, 200, "Games fetched successfully", games);
+    // Extract and validate pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Extract sorting parameters
+    const sortBy = req.query.sortBy || "created_at";
+    const order = req.query.order || "DESC";
+
+    // Extract filtering parameters
+    const search = req.query.search || "";
+    const releaseDateStart = req.query.releaseDateStart || "";
+    const releaseDateEnd = req.query.releaseDateEnd || "";
+
+    // Validate pagination parameters
+    if (page < 1) {
+      return handleResponse(res, 400, "Page must be greater than 0");
+    }
+
+    if (limit < 1 || limit > 100) {
+      return handleResponse(res, 400, "Limit must be between 1 and 100");
+    }
+
+    // Validate sortingg parameters
+    const allowedSortFields = [
+      "title",
+      "release_date",
+      "created_at",
+      "platform",
+      "genre",
+      "publisher",
+      "developer",
+    ];
+    if (!allowedSortFields.includes(sortBy.toLowerCase())) {
+      return handleResponse(
+        res,
+        400,
+        `Invalid sortBy field. Allowed fields: ${allowedSortFields.join(", ")}`
+      );
+    }
+
+    if (!["ASC", "DESC"].includes(order.toUpperCase())) {
+      return handleResponse(res, 400, "Order must be ASC or DESC");
+    }
+
+    // Validate release date formats
+    if (releaseDateStart && !isValidDate(releaseDateStart)) {
+      return handleResponse(res, 400, "Invalid releaseDateStart format");
+    }
+
+    if (releaseDateEnd && !isValidDate(releaseDateEnd)) {
+      return handleResponse(res, 400, "Invalid releaseDateEnd format");
+    }
+
+    const options = {
+      page,
+      limit,
+      sortBy: sortBy.toLowerCase(),
+      order: order.toUpperCase(),
+      search: search.trim() || "",
+      releaseDateStart: releaseDateStart || null,
+      releaseDateEnd: releaseDateEnd || null,
+    };
+
+    const result = await getAllGamesService(options);
+    handleResponse(res, 200, "Games fetched successfully", result);
   } catch (error) {
     next(error);
   }
@@ -66,25 +128,56 @@ export const getGameById = async (req, res, next) => {
 
 export const getGamesByGenre = async (req, res, next) => {
   const { genre } = req.params;
-  try {
-    const games = await getGamesByGenreService(genre);
-    if (!games || games.length === 0) {
-      return handleResponse(res, 404, "Games not found");
-    }
-    handleResponse(res, 200, "Games fetched successfully", games);
-  } catch (error) {
-    next(error);
-  }
-};
 
-export const searchGames = async (req, res, next) => {
-  const { searchTerm } = req.params;
   try {
-    const games = await searchGamesService(searchTerm);
-    if (!games || games.length === 0) {
-      return handleResponse(res, 404, "Games not found");
+    // Extract and validate pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Extract sorting parameters
+    const sortBy = req.query.sortBy || "created_at";
+    const order = req.query.order || "DESC";
+
+    // Validate pagination parameters
+    if (page < 1) {
+      return handleResponse(res, 400, "Page must be greater than 0");
     }
-    handleResponse(res, 200, "Games fetched successfully", games);
+
+    if (limit < 1 || limit > 100) {
+      return handleResponse(res, 400, "Limit must be between 1 and 100");
+    }
+
+    // Validate sortingg parameters
+    const allowedSortFields = [
+      "title",
+      "release_date",
+      "created_at",
+      "platform",
+      "genre",
+      "publisher",
+      "developer",
+    ];
+    if (!allowedSortFields.includes(sortBy.toLowerCase())) {
+      return handleResponse(
+        res,
+        400,
+        `Invalid sortBy field. Allowed fields: ${allowedSortFields.join(", ")}`
+      );
+    }
+
+    if (!["ASC", "DESC"].includes(order.toUpperCase())) {
+      return handleResponse(res, 400, "Order must be ASC or DESC");
+    }
+
+    const options = {
+      page,
+      limit,
+      sortBy: sortBy.toLowerCase(),
+      order: order.toUpperCase(),
+    };
+
+    const result = await getGamesByGenreService(genre, options);
+    handleResponse(res, 200, "Games fetched successfully", result);
   } catch (error) {
     next(error);
   }

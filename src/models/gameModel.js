@@ -109,21 +109,66 @@ export const getGameByIdService = async (id) => {
   return result.rows[0]; // Return the first game with the specified id
 };
 
-export const getGamesByGenreService = async (genre) => {
-  const result = await pool.query(
-    "SELECT * FROM games WHERE genre ILIKE $1 ORDER BY created_at DESC",
+export const getGamesByGenreService = async (genre, options = {}) => {
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = "created_at",
+    order = "DESC",
+  } = options;
+
+  const offset = (page - 1) * limit;
+
+  const countResult = await pool.query(
+    "SELECT COUNT(*) FROM games WHERE genre ILIKE $1",
     [`%${genre}%`]
   );
-  return result.rows; // Return all games with the specified genre
-};
+  const totalGames = parseInt(countResult.rows[0].count);
 
-export const searchGamesService = async (searchTerm) => {
-  // Use ILIKE for case-insensitive search in PostgreSQL
+  //validate sortBy and order inputs
+  const validSortByFields = [
+    "title",
+    "release_date",
+    "created_at",
+    "platform",
+    "genre",
+    "publisher",
+    "developer",
+  ];
+  const validOrder = ["ASC", "DESC"];
+  const sortByField = validSortByFields.includes(sortBy.toLowerCase())
+    ? sortBy.toLowerCase()
+    : "created_at";
+  const sortOrder = validOrder.includes(order.toUpperCase())
+    ? order.toUpperCase()
+    : "DESC";
+
+  const totalPages = Math.ceil(totalGames / limit);
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
+
   const result = await pool.query(
-    "SELECT * FROM games WHERE title ILIKE $1 OR description ILIKE $1 ORDER BY created_at DESC",
-    [`%${searchTerm}%`]
+    `SELECT * FROM games WHERE genre ILIKE $1 ORDER BY ${sortByField} ${sortOrder} LIMIT $2 OFFSET $3`,
+    [`%${genre}%`, limit, offset]
   );
-  return result.rows; // Return all games that match the search term in title or description
+
+  return {
+    games: result.rows,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      limit,
+      hasNextPage,
+      hasPrevPage,
+      nextPage: hasNextPage ? page + 1 : null,
+      prevPage: hasPrevPage ? page - 1 : null,
+    },
+    filters: {
+      genre: genre || null,
+      sortBy: sortByField,
+      order: sortOrder,
+    },
+  };
 };
 
 export const createGameService = async (
