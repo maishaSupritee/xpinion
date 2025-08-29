@@ -172,7 +172,7 @@ async function ensureUniqueIndexes(client) {
   `);
 }
 
-async function main() {
+export async function runSeed() {
   const client = await pool.connect();
   try {
     await client.query("BEGIN"); // Start transaction
@@ -198,4 +198,8 @@ async function main() {
   }
 }
 
-main();
+// Run the seed script if this file is executed directly
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
+  runSeed().catch(() => process.exit(1));
+}

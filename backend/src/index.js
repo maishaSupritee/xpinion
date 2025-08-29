@@ -10,6 +10,7 @@ import createUserTable from "./data/createUserTable.js";
 import authRoutes from "./routes/authRoutes.js";
 import createReviewsTable from "./data/createReviewsTable.js";
 import createGamesTable from "./data/createGamesTable.js";
+import { runSeed } from "./scripts/seedData.js";
 
 dotenv.config();
 
@@ -76,6 +77,10 @@ app.get("/", async (req, res) => {
 const startServer = async () => {
   try {
     await initializeTables(); // Ensure tables are created before starting the server
+    if (process.env.RUN_SEED_ON_START === "true") {
+      await runSeed(); // idempotent - safe to run multiple times
+    }
+
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });
