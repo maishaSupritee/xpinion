@@ -1,6 +1,8 @@
 import pool from "../config/db.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+
 dotenv.config();
 
 const SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10;
@@ -172,7 +174,7 @@ async function ensureUniqueIndexes(client) {
   `);
 }
 
-export async function runSeed() {
+export async function runSeed({ closePool = false } = {}) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN"); // Start transaction
@@ -193,13 +195,18 @@ export async function runSeed() {
     console.error("❌ Seed failed:", err.stack || err);
   } finally {
     client.release(); // Release the client back to the pool
-    // Close the pool to terminate the connection after seeding
-    await pool.end();
+    if (closePool) {
+      // Only close the pool when running as a separate process such as in CLI
+      await pool.end();
+    }
   }
 }
 
 // Run the seed script if this file is executed directly
+// allow it to run as a standalone script
 const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] === __filename) {
-  runSeed().catch(() => process.exit(1));
+  runSeed({ closePool: true })
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
 }

@@ -78,7 +78,10 @@ const startServer = async () => {
   try {
     await initializeTables(); // Ensure tables are created before starting the server
     if (process.env.RUN_SEED_ON_START === "true") {
-      await runSeed(); // idempotent - safe to run multiple times
+      // idempotent - safe to run multiple times
+      // same as runSeed({closePool: false}) - we keep the pool running here
+      // because the app runs after seeding using the same shared DB pool
+      await runSeed();
     }
 
     app.listen(PORT, () => {
