@@ -18,13 +18,36 @@ const PORT = process.env.PORT || 3000;
 
 //middlewares
 app.use(express.json()); // Parse JSON bodies
-app.use(cors()); // Enable CORS for all routes
+
+/* CORS - controls which browsers can call our API from a web page
+CORS_ORIGIN is a comma separated list of allowed origins such as our frontend domain, localhost, api domain
+!origin allows tools like POSTMAN/cURL
+credentials: true -> allows cookies to be sent (Refresh tokens)
+*/
+const allowlist = (process.env.CORS_ORIGIN || "http://localhost:3000")
+  .split(",")
+  .map((s) => s.trim());
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // allow same-origin/no-origin (curl/postman) and allowlisted origins
+      if (!origin || allowlist.includes(origin)) return cb(null, true);
+      cb(new Error("CORS blocked"));
+    },
+    credentials: true,
+  })
+);
 
 // routes
 app.use("/api", userRoutes); // Use user routes under /api path
 app.use("/api/auth", authRoutes); // Use authentication routes under /auth path
 app.use("/api/games", gameRoutes);
 app.use("/api/reviews", reviewRoutes); // Use review routes under /reviews path
+
+/* health check route - a tiny fast endpoint (no DB Access) for 
+Render to check if our service is healthy */
+app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 
 // error handling
 app.use(errorHandling); // Centralized error handling middleware
