@@ -1,0 +1,17 @@
+ node_modules
+ .next
+ .husky
+ coverage
+ .prettierignore
+ .prettierrc.json
+ .gitignore
+ .stylelintignore
+ .eslintignore
+ *.log
+ playwright-report
+ .nyc_output
+ test-results
+.env*
+.env.local
+.env.production
+.env.test
