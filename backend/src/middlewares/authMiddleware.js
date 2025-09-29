@@ -1,7 +1,7 @@
 // to protect routes that require authentication
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { handleResponse } from "../utils/helpers";
+import { handleResponse } from "../utils/helpers.js";
 dotenv.config(); // Load environment variables from .env file
 
 export const protect = (req, res, next) => {
