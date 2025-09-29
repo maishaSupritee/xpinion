@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import {
   getUserByEmailForAuthService,
   getUserByEmailService,
+  getUserByIdService,
   createUserService,
 } from "../models/userModel.js";
 import {generateToken, cookieOptions} from "../utils/authHelpers.js";
@@ -70,8 +71,14 @@ export const logOut = async (req, res) => {
 }
 
 // GET CURRENT USER
-export const getCurrentUser = async (req,res) => {
-  return handleResponse(res, 200, "Current user fetched successfully", {
-    user: req.user
-  });
-}
+export const getCurrentUser = async (req, res, next) => {
+  try {
+    const user = await getUserByIdService(req.user.id);
+    if (!user) return handleResponse(res, 404, "User not found");
+
+    const { password, ...safeUser } = user;
+    return handleResponse(res, 200, "User fetched successfully", { user: safeUser });
+  } catch (err) {
+    next(err);
+  }
+};
