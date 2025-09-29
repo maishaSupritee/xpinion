@@ -1,6 +1,7 @@
 // to protect routes that require authentication
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { handleResponse } from "../utils/helpers";
 dotenv.config(); // Load environment variables from .env file
 
 export const protect = (req, res, next) => {
@@ -56,4 +57,18 @@ export const requireOwnerOrAdmin = (req, res, next) => {
     message:
       "You can only access your own resources or you need admin privileges",
   });
+};
+
+export const requireAuth = (req, res, next) => {
+  const token = req.cookies?.accessToken;
+  if(!token){
+    return handleResponse(res, 401, "Unauthenticated");
+  }
+
+  try{
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    return next();
+  }catch(err){
+    return handleResponse(res, 401, "Invalid or expired session");
+  }
 };

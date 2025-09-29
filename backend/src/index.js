@@ -11,6 +11,7 @@ import authRoutes from "./routes/authRoutes.js";
 import createReviewsTable from "./data/createReviewsTable.js";
 import createGamesTable from "./data/createGamesTable.js";
 import { runSeed } from "./scripts/seedData.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
@@ -39,6 +40,10 @@ app.use(
     credentials: true,
   })
 );
+
+// cookie parser
+app.set("trust proxy", 1); // trust first proxy - needed for secure cookies if behind proxy like in production
+app.use(cookieParser());
 
 // routes
 app.use("/api", userRoutes); // Use user routes under /api path

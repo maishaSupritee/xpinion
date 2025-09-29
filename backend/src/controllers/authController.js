@@ -4,7 +4,7 @@ import {
   getUserByEmailService,
   createUserService,
 } from "../models/userModel.js";
-import generateToken from "../utils/generateToken.js";
+import {generateToken, cookieOptions} from "../utils/authHelpers.js";
 import { handleResponse } from "../utils/helpers.js";
 
 //SIGN UP
@@ -18,11 +18,11 @@ export const signUp = async (req, res, next) => {
     }
 
     const newUser = await createUserService(username, email, password, role);
-    const token = generateToken(newUser.id);
+    const token = generateToken(newUser);
 
+    res.cookie("accessToken", token, cookieOptions); // Set token in HTTP-only cookie
     return handleResponse(res, 201, "User created successfully", {
       user: newUser,
-      token,
     });
   } catch (error) {
     next(error);
@@ -50,11 +50,28 @@ export const logIn = async (req, res, next) => {
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
+    res.cookie("accessToken", token, cookieOptions); // Set token in HTTP-only cookie
+
     return handleResponse(res, 200, "Login successful", {
       user: userWithoutPassword,
-      token,
     });
   } catch (error) {
     next(error);
   }
 };
+
+// LOG OUT
+export const logOut = async (req, res) => {
+  res.clearCookie("accessToken", {
+    ...cookieOptions,
+    maxAge: 0, // Immediately expire the cookie
+  });
+  return handleResponse(res, 200, "Logged out successfully");
+}
+
+// GET CURRENT USER
+export const getCurrentUser = async (req,res) => {
+  return handleResponse(res, 200, "Current user fetched successfully", {
+    user: req.user
+  });
+}
